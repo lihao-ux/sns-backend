@@ -1,6 +1,14 @@
-# 最简单的 Dockerfile - 不需要构建，直接运行
-FROM openjdk:8-jre-slim
+FROM eclipse-temurin:8-jre-alpine
+
 WORKDIR /app
 COPY ruoyi-admin/target/ruoyi-admin.jar app.jar
+
 EXPOSE 8080
-CMD ["java", "-jar", "app.jar"]
+
+# 限制 JVM 内存使用，适配 512MB 限制
+ENTRYPOINT ["java", \
+    "-Xmx400m", \
+    "-Xms256m", \
+    "-XX:+UseSerialGC", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "app.jar"]
