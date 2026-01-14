@@ -2,6 +2,8 @@ package com.ruoyi.employee.service;
 
 import java.util.List;
 import com.ruoyi.employee.domain.Employee;
+import com.ruoyi.system.domain.dto.EmployeeFreeQuryDto;
+import com.ruoyi.system.domain.dto.EmployeeQuryDto;
 
 /**
  * 社員情報管理Service接口
@@ -25,7 +27,7 @@ public interface IEmployeeService
      * @param employee 社員情報管理
      * @return 社員情報管理集合
      */
-    public List<Employee> selectEmployeeList(Employee employee);
+    public List<Employee> selectEmployeeList(EmployeeQuryDto employee);
 
     /**
      * 新增社員情報管理
@@ -58,4 +60,8 @@ public interface IEmployeeService
      * @return 结果
      */
     public int deleteEmployeeByEmployeeId(Long employeeId);
+
+    public int delEmployeeSkillById(Long employeeTechnologyId);
+
+    public List<Employee> getFreeEmployeeList(EmployeeFreeQuryDto employeeFreeQuryDto);
 }

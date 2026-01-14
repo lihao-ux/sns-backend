@@ -1,7 +1,10 @@
-package com.ruoyi.employee.controller;
+package com.ruoyi.web.controller;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.system.domain.dto.EmployeeFreeQuryDto;
+import com.ruoyi.system.domain.dto.EmployeeQuryDto;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,10 +42,10 @@ public class EmployeeController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('employee:employee:list')")
     @GetMapping("/list")
-    public TableDataInfo list(Employee employee)
+    public TableDataInfo list(EmployeeQuryDto employeeQuryDto)
     {
         startPage();
-        List<Employee> list = employeeService.selectEmployeeList(employee);
+        List<Employee> list = employeeService.selectEmployeeList(employeeQuryDto);
         return getDataTable(list);
     }
 
@@ -52,7 +55,7 @@ public class EmployeeController extends BaseController
     @PreAuthorize("@ss.hasPermi('employee:employee:export')")
     @Log(title = "社員情報管理", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, Employee employee)
+    public void export(HttpServletResponse response, EmployeeQuryDto employee)
     {
         List<Employee> list = employeeService.selectEmployeeList(employee);
         ExcelUtil<Employee> util = new ExcelUtil<Employee>(Employee.class);
@@ -92,6 +95,17 @@ public class EmployeeController extends BaseController
     }
 
     /**
+     * 技能IDに基づいて社員の技能情報を削除する
+     */
+    @PreAuthorize("@ss.hasPermi('employee:employee:delEmployeeSkillById')")
+    @Log(title = "社員情報管理", businessType = BusinessType.DELETE)
+    @DeleteMapping(value = "/skill/{employeeTechnologyId}")
+    public AjaxResult delEmployeeSkillById(@PathVariable("employeeTechnologyId") Long employeeTechnologyId)
+    {
+        return toAjax(employeeService.delEmployeeSkillById(employeeTechnologyId));
+    }
+
+    /**
      * 删除社員情報管理
      */
     @PreAuthorize("@ss.hasPermi('employee:employee:remove')")
@@ -100,5 +114,16 @@ public class EmployeeController extends BaseController
     public AjaxResult remove(@PathVariable Long[] employeeIds)
     {
         return toAjax(employeeService.deleteEmployeeByEmployeeIds(employeeIds));
+    }
+
+    /**
+     * 待機社員情報検索
+     */
+    @PreAuthorize("@ss.hasPermi('employee:employee:getFreeEmployeeList')")
+    @GetMapping("/getFreeEmployeeList")
+    public TableDataInfo getFreeEmployeeList(EmployeeFreeQuryDto employeeFreeQuryDto)
+    {
+        startPage();
+        return getDataTable(employeeService.getFreeEmployeeList(employeeFreeQuryDto));
     }
 }

@@ -1,7 +1,10 @@
 package com.ruoyi.employee.domain;
 
 import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ruoyi.system.domain.dto.EmployeeSkillDto;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
@@ -57,7 +60,18 @@ public class Employee extends BaseEntity
     @Excel(name = "案件名")
     private String employeeEvent;
 
-    public void setEmployeeId(Long employeeId) 
+    /** 技能情報 */
+    List<EmployeeSkillDto> employeeSkills;
+
+    public List<EmployeeSkillDto> getEmployeeSkills() {
+        return employeeSkills;
+    }
+
+    public void setEmployeeSkills(List<EmployeeSkillDto> employeeSkills) {
+        this.employeeSkills = employeeSkills;
+    }
+
+    public void setEmployeeId(Long employeeId)
     {
         this.employeeId = employeeId;
     }

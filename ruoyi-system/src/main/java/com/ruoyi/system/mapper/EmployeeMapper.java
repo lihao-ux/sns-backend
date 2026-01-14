@@ -2,6 +2,10 @@ package com.ruoyi.employee.mapper;
 
 import java.util.List;
 import com.ruoyi.employee.domain.Employee;
+import com.ruoyi.system.domain.dto.EmployeeFreeQuryDto;
+import com.ruoyi.system.domain.dto.EmployeeQuryDto;
+import com.ruoyi.system.domain.dto.EmployeeSkillDto;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 社員情報管理Mapper接口
@@ -25,7 +29,7 @@ public interface EmployeeMapper
      * @param employee 社員情報管理
      * @return 社員情報管理集合
      */
-    public List<Employee> selectEmployeeList(Employee employee);
+    public List<Employee> selectEmployeeList(EmployeeQuryDto employee);
 
     /**
      * 新增社員情報管理
@@ -58,4 +62,12 @@ public interface EmployeeMapper
      * @return 结果
      */
     public int deleteEmployeeByEmployeeIds(Long[] employeeIds);
+
+    public int addEmployeeSkill(@Param("employeeSkill")EmployeeSkillDto employeeSkill,@Param("employeeId") Long employeeId);
+
+    public List<EmployeeSkillDto> getEmployeeSkills(Long employeeId);
+
+    public int delEmployeeSkillById(Long employeeTechnologyId);
+
+    public List<Employee> getFreeEmployeeList(@Param("employeeFreeQuryDto")EmployeeFreeQuryDto employeeFreeQuryDto);
 }

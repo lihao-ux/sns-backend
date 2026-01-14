@@ -1,36 +1,76 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.employee.mapper.EmployeeMapper">
-    
+
     <resultMap type="Employee" id="EmployeeResult">
-        <result property="employeeId"    column="employee_id"    />
-        <result property="employeeName"    column="employee_name"    />
-        <result property="employeeGender"    column="employee_gender"    />
-        <result property="employeeWorkStatus"    column="employee_work_status"    />
-        <result property="employeeAge"    column="employee_age"    />
-        <result property="employeeJapaneseLevel"    column="employee_japanese_level"    />
-        <result property="employeeMail"    column="employee_mail"    />
-        <result property="employeeBirthday"    column="employee_birthday"    />
-        <result property="employeeWorkExperience"    column="employee_work_experience"    />
-        <result property="employeeEvent"    column="employee_event"    />
+        <result property="employeeId" column="employee_id"/>
+        <result property="employeeName" column="employee_name"/>
+        <result property="employeeGender" column="employee_gender"/>
+        <result property="employeeWorkStatus" column="employee_work_status"/>
+        <result property="employeeAge" column="employee_age"/>
+        <result property="employeeJapaneseLevel" column="employee_japanese_level"/>
+        <result property="employeeMail" column="employee_mail"/>
+        <result property="employeeBirthday" column="employee_birthday"/>
+        <result property="employeeWorkExperience" column="employee_work_experience"/>
+        <result property="employeeEvent" column="employee_event"/>
+        <collection property="employeeSkills" ofType="EmployeeSkillDto">
+            <id property="employeeTechnologyId"
+                column="id"/>
+            <result property="technologyId"
+                    column="technology_id"/>
+            <result property="proficiencyLevel"
+                    column="proficiency_level"/>
+            <result property="experienceYears"
+                    column="experience_years"/>
+        </collection>
     </resultMap>
 
     <sql id="selectEmployeeVo">
-        select employee_id, employee_name, employee_gender, employee_work_status, employee_age, employee_japanese_level, employee_mail, employee_birthday, employee_work_experience, employee_event from employee
+        select employee_id,
+               employee_name,
+               employee_gender,
+               employee_work_status,
+               employee_age,
+               employee_japanese_level,
+               employee_mail,
+               employee_birthday,
+               employee_work_experience,
+               employee_event
+        from employee
     </sql>
 
-    <select id="selectEmployeeList" parameterType="Employee" resultMap="EmployeeResult">
+    <select id="selectEmployeeList" parameterType="EmployeeQuryDto" resultMap="EmployeeResult">
         <include refid="selectEmployeeVo"/>
-        <where>  
-            <if test="employeeName != null  and employeeName != ''"> and employee_name like concat('%', #{employeeName}, '%')</if>
-            <if test="employeeWorkStatus != null  and employeeWorkStatus != ''"> and employee_work_status = #{employeeWorkStatus}</if>
-            <if test="employeeJapaneseLevel != null  and employeeJapaneseLevel != ''"> and employee_japanese_level = #{employeeJapaneseLevel}</if>
-            <if test="employeeEvent != null  and employeeEvent != ''"> and employee_event like concat('%', #{employeeEvent}, '%')</if>
+        <where>
+            <if test="employeeName != null  and employeeName != ''">and employee_name like concat('%', #{employeeName},
+                '%')
+            </if>
+            <if test="employeeWorkStatus != null  and employeeWorkStatus != ''">and employee_work_status =
+                #{employeeWorkStatus}
+            </if>
+            <if test="employeeJapaneseLevels != null and employeeJapaneseLevels.length> 0">
+                AND employee_japanese_level IN
+                <foreach collection="employeeJapaneseLevels" item="level" open="(" separator="," close=")">
+                    #{level}
+                </foreach>
+            </if>
+            <if test="employeeEvent != null  and employeeEvent != ''">and employee_event like concat('%',
+                #{employeeEvent}, '%')
+            </if>
         </where>
     </select>
-    
+
+    <select id="getEmployeeSkills" resultType="EmployeeSkillDto">
+        select id                as employeeTechnologyId,
+               technology_id     as technologyId,
+               proficiency_level as proficiencyLevel,
+               experience_years  as experienceYears
+        from employee_technology
+        where employee_id = #{employeeId}
+    </select>
+
     <select id="selectEmployeeByEmployeeId" parameterType="Long" resultMap="EmployeeResult">
         <include refid="selectEmployeeVo"/>
         where employee_id = #{employeeId}
@@ -48,7 +88,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="employeeBirthday != null">employee_birthday,</if>
             <if test="employeeWorkExperience != null">employee_work_experience,</if>
             <if test="employeeEvent != null">employee_event,</if>
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="employeeName != null and employeeName != ''">#{employeeName},</if>
             <if test="employeeGender != null and employeeGender != ''">#{employeeGender},</if>
@@ -59,15 +99,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="employeeBirthday != null">#{employeeBirthday},</if>
             <if test="employeeWorkExperience != null">#{employeeWorkExperience},</if>
             <if test="employeeEvent != null">#{employeeEvent},</if>
-         </trim>
+        </trim>
     </insert>
-
+    <insert id="addEmployeeSkill">
+        insert into employee_technology (employee_id,
+                                         technology_id,
+                                         proficiency_level, experience_years)
+        values (#{employeeId},
+                #{employeeSkill.technologyId},
+                #{employeeSkill.proficiencyLevel},
+                #{employeeSkill.experienceYears})
+    </insert>
     <update id="updateEmployee" parameterType="Employee">
         update employee
         <trim prefix="SET" suffixOverrides=",">
             <if test="employeeName != null and employeeName != ''">employee_name = #{employeeName},</if>
             <if test="employeeGender != null and employeeGender != ''">employee_gender = #{employeeGender},</if>
-            <if test="employeeWorkStatus != null and employeeWorkStatus != ''">employee_work_status = #{employeeWorkStatus},</if>
+            <if test="employeeWorkStatus != null and employeeWorkStatus != ''">employee_work_status =
+                #{employeeWorkStatus},
+            </if>
             <if test="employeeAge != null">employee_age = #{employeeAge},</if>
             <if test="employeeJapaneseLevel != null">employee_japanese_level = #{employeeJapaneseLevel},</if>
             <if test="employeeMail != null">employee_mail = #{employeeMail},</if>
@@ -79,13 +129,77 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <delete id="deleteEmployeeByEmployeeId" parameterType="Long">
-        delete from employee where employee_id = #{employeeId}
+        delete
+        from employee
+        where employee_id = #{employeeId}
     </delete>
 
     <delete id="deleteEmployeeByEmployeeIds" parameterType="String">
-        delete from employee where employee_id in 
+        delete from employee where employee_id in
         <foreach item="employeeId" collection="array" open="(" separator="," close=")">
             #{employeeId}
         </foreach>
     </delete>
+
+    <select id="getTodayBirthdayCustomers"
+            resultType="com.ruoyi.customer.domain.Customer">
+
+        SELECT customer_id       AS customerId,
+               customer_name     AS customerName,
+               customer_birthday AS customerBirthday,
+               customer_email    AS customerEmail
+        FROM customer
+        WHERE
+            MONTH (customer_birthday) = MONTH (CURDATE())
+          AND DAY (customer_birthday) = DAY (CURDATE())
+          AND customer_email IS NOT NULL
+          AND customer_email != '';
+    </select>
+    <delete id="delEmployeeSkillById">
+        delete
+        from employee_technology
+        where id = #{employeeTechnologyId}
+    </delete>
+    <select id="getFreeEmployeeList" resultMap="EmployeeResult">
+        SELECT e.employee_id,
+        e.employee_name,
+        e.employee_gender,
+        e.employee_work_status,
+        e.employee_age,
+        e.employee_japanese_level,
+        e.employee_work_experience,
+        et.technology_id,
+        et.proficiency_level,
+        et.experience_years,
+        et.id
+        FROM employee e
+        LEFT JOIN employee_technology et
+        ON e.employee_id = et.employee_id
+        WHERE e.employee_work_status = '1'
+        <if test="employeeFreeQuryDto.employeeJapaneseLevels != null
+        and employeeFreeQuryDto.employeeJapaneseLevels.length > 0">
+            AND e.employee_japanese_level IN
+            <foreach collection="employeeFreeQuryDto.employeeJapaneseLevels"
+                     item="level"
+                     open="("
+                     separator=","
+                     close=")">
+                #{level}
+            </foreach>
+        </if>
+        <if test="employeeFreeQuryDto.technologyIds != null
+        and employeeFreeQuryDto.technologyIds.length > 0">
+            AND etr.technology_id IN
+            <foreach collection="employeeFreeQuryDto.technologyIds"
+                     item="techId"
+                     open="("
+                     separator=","
+                     close=")">
+                #{techId}
+            </foreach>
+        </if>
+        <if test="employeeFreeQuryDto.employeeWorkExperience != null">
+            AND e.employee_work_experience &gt;= #{employeeFreeQuryDto.employeeWorkExperience}
+        </if>
+    </select>
 </mapper>
